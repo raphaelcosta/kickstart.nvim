@@ -91,7 +91,7 @@ vim.g.mapleader = ' '
 vim.g.maplocalleader = ' '
 
 -- Set to true if you have a Nerd Font installed and selected in the terminal
-vim.g.have_nerd_font = false
+vim.g.have_nerd_font = true
 
 -- [[ Setting options ]]
 -- See `:help vim.opt`
@@ -102,7 +102,7 @@ vim.g.have_nerd_font = false
 vim.opt.number = true
 -- You can also add relative line numbers, to help with jumping.
 --  Experiment for yourself to see if you like it!
--- vim.opt.relativenumber = true
+vim.opt.relativenumber = true
 
 -- Enable mouse mode, can be useful for resizing splits for example!
 vim.opt.mouse = 'a'
@@ -450,6 +450,10 @@ require('lazy').setup({
       --
       -- If you're wondering about lsp vs treesitter, you can check out the wonderfully
       -- and elegantly composed help section, `:help lsp-vs-treesitter`
+      vim.api.nvim_create_user_command('FormatToggle', function()
+        format_is_enabled = not format_is_enabled
+        print('Setting autoformatting to: ' .. tostring(format_is_enabled))
+      end, {})
 
       --  This function gets run when an LSP attaches to a particular buffer.
       --    That is to say, every time a new file is opened that is associated with
@@ -838,7 +842,7 @@ require('lazy').setup({
     'nvim-treesitter/nvim-treesitter',
     build = ':TSUpdate',
     opts = {
-      ensure_installed = { 'bash', 'c', 'diff', 'html', 'lua', 'luadoc', 'markdown', 'markdown_inline', 'query', 'vim', 'vimdoc' },
+      ensure_installed = { 'bash', 'c', 'diff', 'html', 'lua', 'luadoc', 'markdown', 'markdown_inline', 'ruby', 'vue', 'python', 'query', 'vim', 'vimdoc' },
       -- Autoinstall languages that are not installed
       auto_install = true,
       highlight = {
@@ -867,6 +871,38 @@ require('lazy').setup({
     end,
   },
 
+  'arzg/vim-colors-xcode',
+  'github/copilot.vim',
+  {
+    'mrjones2014/smart-splits.nvim',
+    opts = { ignored_filetypes = { 'nofile', 'quickfix', 'qf', 'prompt' }, ignored_buftypes = { 'nofile' } },
+  },
+
+  {
+    'stevearc/oil.nvim',
+    opts = {},
+    -- Optional dependencies
+    dependencies = { { 'echasnovski/mini.icons', opts = {} } },
+    -- dependencies = { "nvim-tree/nvim-web-devicons" }, -- use if prefer nvim-web-devicons
+  },
+
+  {
+    'gbprod/yanky.nvim',
+    opts = {
+      ring = {
+        history_length = 100,
+        storage = 'shada',
+        sync_with_numbered_registers = true,
+        cancel_event = 'update',
+        ignore_registers = { '_' },
+        update_register_on_cycle = false,
+      },
+      system_clipboard = {
+        sync_with_ring = true,
+      },
+    },
+  },
+
   -- The following two comments only work if you have downloaded the kickstart repo, not just copy pasted the
   -- init.lua. If you want these files, they are in the repository, so you can just download them and
   -- place them in the correct locations.
@@ -876,12 +912,12 @@ require('lazy').setup({
   --  Here are some example plugins that I've included in the Kickstart repository.
   --  Uncomment any of the lines below to enable them (you will need to restart nvim).
   --
-  -- require 'kickstart.plugins.debug',
-  -- require 'kickstart.plugins.indent_line',
-  -- require 'kickstart.plugins.lint',
-  -- require 'kickstart.plugins.autopairs',
+  require 'kickstart.plugins.debug',
+  require 'kickstart.plugins.indent_line',
+  require 'kickstart.plugins.lint',
+  require 'kickstart.plugins.autopairs',
   -- require 'kickstart.plugins.neo-tree',
-  -- require 'kickstart.plugins.gitsigns', -- adds gitsigns recommend keymaps
+  require 'kickstart.plugins.gitsigns', -- adds gitsigns recommend keymaps
 
   -- NOTE: The import below can automatically add your own plugins, configuration, etc from `lua/custom/plugins/*.lua`
   --    This is the easiest way to modularize your config.
@@ -910,6 +946,58 @@ require('lazy').setup({
     },
   },
 })
+
+vim.keymap.set({ 'n', 'x' }, 'p', '<Plug>(YankyPutAfter)')
+vim.keymap.set({ 'n', 'x' }, 'P', '<Plug>(YankyPutBefore)')
+vim.keymap.set({ 'n', 'x' }, 'gp', '<Plug>(YankyGPutAfter)')
+vim.keymap.set({ 'n', 'x' }, 'gP', '<Plug>(YankyGPutBefore)')
+
+vim.keymap.set('n', '<c-p>', '<Plug>(YankyPreviousEntry)')
+vim.keymap.set('n', '<c-n>', '<Plug>(YankyNextEntry)')
+vim.keymap.set('n', '<C-l>', function()
+  require('smart-splits').move_cursor_right()
+end, { desc = 'Move to right split' })
+require('oil').setup()
+
+vim.cmd.colorscheme 'xcodedarkhc'
+
+vim.keymap.set('n', '<C-h>', function()
+  require('smart-splits').move_cursor_left()
+end, { desc = 'Move to left split' })
+vim.keymap.set('n', '<C-j>', function()
+  require('smart-splits').move_cursor_down()
+end, { desc = 'Move to below split' })
+vim.keymap.set('n', '<C-k>', function()
+  require('smart-splits').move_cursor_up()
+end, { desc = 'Move to above split' })
+vim.keymap.set('n', '<C-l>', function()
+  require('smart-splits').move_cursor_right()
+end, { desc = 'Move to right split' })
+vim.keymap.set('n', '<C-Up>', function()
+  require('smart-splits').resize_up()
+end, { desc = 'Resize split up' })
+vim.keymap.set('n', '<C-Down>', function()
+  require('smart-splits').resize_down()
+end, { desc = 'Resize split down' })
+vim.keymap.set('n', '<C-Left>', function()
+  require('smart-splits').resize_left()
+end, { desc = 'Resize split left' })
+vim.keymap.set('n', '<C-Right>', function()
+  require('smart-splits').resize_right()
+end, { desc = 'Resize split right' })
+
+vim.keymap.set('n', '|', '<cmd>vsplit<cr>', { desc = 'Vertical Split' })
+vim.keymap.set('n', '\\', '<cmd>split<cr>', { desc = 'Horizontal Split' })
+
+vim.g.copilot_assume_mapped = true
+
+vim.api.nvim_create_autocmd('BufEnter', {
+  pattern = { '*.erb' },
+  -- enable wrap mode for json files only
+  command = 'set syntax=html',
+})
+
+require('telescope').load_extension 'yank_history'
 
 -- The line beneath this is called `modeline`. See `:help modeline`
 -- vim: ts=2 sts=2 sw=2 et
